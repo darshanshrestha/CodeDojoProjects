@@ -14,7 +14,7 @@ namespace UrlHashtagSegmentation
 
     }
 
-    class WordDictionary : IWordDictionary
+    public class WordDictionary : IWordDictionary
     {
         private HashSet<string> dictionary = new HashSet<string>();
 
