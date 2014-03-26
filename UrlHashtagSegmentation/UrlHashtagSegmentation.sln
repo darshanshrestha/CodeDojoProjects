@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrlHashtagSegmentation", "UrlHashtagSegmentation.csproj", "{B805C42E-5CA5-4396-B189-590A88297B03}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Submission", "Submission\Submission.csproj", "{BBE21A09-EABF-42A0-A570-897CB2B637A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{B805C42E-5CA5-4396-B189-590A88297B03}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B805C42E-5CA5-4396-B189-590A88297B03}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B805C42E-5CA5-4396-B189-590A88297B03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBE21A09-EABF-42A0-A570-897CB2B637A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBE21A09-EABF-42A0-A570-897CB2B637A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBE21A09-EABF-42A0-A570-897CB2B637A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBE21A09-EABF-42A0-A570-897CB2B637A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -182,6 +182,8 @@ namespace UrlHashtagSegmentation
         [Test]
         public void when_GetWords_urlType_wwwThisisinsanecom_then_the_output_should_be_this_is_insane()
         {
+            _dictionary.Add("is");
+            _dictionary.Add("insane");
             var urlHashTagParser = new UrlHashtagParser(_dictionary);
             List<string> words = urlHashTagParser.GetWords("www.thisisinsane.com");
 

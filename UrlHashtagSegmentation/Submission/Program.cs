@@ -1,44 +1,78 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace UrlHashtagSegmentation
+namespace Submission
 {
-
-    /*    Pseudo code for tokenizer 
- 
-     2014republicanxiety
-    bool GenerateList(input)
+    public enum InputType
     {
-        Get list of words matching the beginning of input
-    
-        // ex: watermelons  would return { water ; watermelon ; watermelons } but would not include {me ; melon ; melons}
-        // if input begins with a number, return a single element list that includes all the consecutive numbers
-        // ex: 214phonenumbers would return a list {214}
-    
-        IF longest word == input // the end of the input has been reached, and a word (or number) exists to the end
-        {
-            Add word to outside list variable // this will be the first entry in the list, and will be the last word tokenized
-            Return true
-        }
- 
-        For each word in list, beginning from longest
-        {
-            IF(GenerateList(substring input characters after current word)) // returning true means we have completed searching and found the end of the input with a suitable word
-                Add current word to outside List variable
-                Return true
-        }
- 
-        Return false // no suitable token list is available for this substring
-        This will continue the for each from previous recursion calls, or if returned to the initial call, then no suitable word list was found.
+        Url,
+        Hashtag,
+        Invalid
     }
- 
-    Intial usage 
-    IF(GenerateList(fullInput))
-    THEN The outside list variable is now the tokenized list in backwards order
-    ELSE No suitable list exists
 
-    */
+    class Solution
+    {
+        static void Main(string[] args)
+        {
+            var dictionary = new WordDictionary();
+
+            var allWords = File.ReadAllLines("words.txt");
+
+            foreach (var word in allWords)
+            {
+                dictionary.Add(word.ToLower());
+            }
+
+            var urlHashTagParser = new UrlHashtagParser(dictionary);
+
+            var numberOfItems = int.Parse(Console.ReadLine());
+
+            List<string> urlHashtags = new List<string>();
+
+            for (int i = 0; i < numberOfItems; i++)
+            {
+                urlHashtags.Add(Console.ReadLine());
+            }
+
+            foreach (string urlHashtag in urlHashtags)
+            {
+                var words = urlHashTagParser.GetWords(urlHashtag);
+
+                Console.WriteLine(string.Join(" ", words));
+
+            }
+
+            
+        }
+    }
+
+    public interface IWordDictionary
+    {
+        void Add(string word);
+        bool Lookup(string word);
+
+
+    }
+
+    public class WordDictionary : IWordDictionary
+    {
+        private HashSet<string> dictionary = new HashSet<string>();
+
+        public void Add(string word)
+        {
+            dictionary.Add(word);
+        }
+
+        public bool Lookup(string word)
+        {
+            return dictionary.Contains(word);
+        }
+    }
+
     public class UrlHashtagParser
     {
         private IWordDictionary _dictionary;
