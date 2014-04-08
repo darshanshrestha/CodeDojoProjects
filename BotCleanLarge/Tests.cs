@@ -10,77 +10,69 @@ namespace BotCleanLarge
     [TestFixture]
     public class Tests
     {
-        private IBot bot;
-
-        [SetUp]
-        public void InitPerTest()
-        {
-            //Cerate an instance of your bot here
-        }
+        private IBot _bot;
 
         [Test]
         public void test_case_1()
         {
             //Arrange
-            var matrix = new char[5,5]
+            var matrix = new string[]
                 {
-                    {'b', 'd', '-', '-', '-'},
-                    {'-', '-', '-', '-', '-'},
-                    {'-', '-', '-', '-', '-'},
-                    {'-', '-', '-', '-', '-'},
-                    {'-', '-', '-', '-', '-'}
+                    "bd---",
+                    "-----",
+                    "-----",
+                    "-----",
+                    "-----"
                 };
-            bot = new Bot(matrix);
-           
+            _bot = new Bot();
+
             //Act
-            string move = bot.NextMove();
-            
+            string move = _bot.next_move(0,0,5,5, matrix);
+
             //Assert
             move.Should().Be("RIGHT");
-            AssertMatrixIsClean();
         }
 
         [Test]
         public void test_case_2()
         {
             //Arrange
-            var matrix = new char[5, 5]
+            var matrix = new string[]
                 {
-                    {'d', 'b', '-', '-', '-'},
-                    {'-', '-', '-', '-', '-'},
-                    {'-', '-', '-', '-', '-'},
-                    {'-', '-', '-', '-', '-'},
-                    {'-', '-', '-', '-', '-'}
+                    "db---",
+                    "-----",
+                    "-----",
+                    "-----",
+                    "-----"
                 };
-            bot = new Bot(matrix);
+            _bot = new Bot();
 
 
             //Act
-            string move = bot.NextMove();
+            string move = _bot.next_move(0, 1, 5, 5, matrix);
 
             //Assert
             move.Should().Be("LEFT");
-            AssertMatrixIsClean();
+
         }
 
         [Test]
         public void when_bot_lands_on_dirty_then_next_move_is_clean()
         {
             //Arrange
-            //Arrange
-            var matrix = new char[5, 5]
+            var matrix = new string[]
                 {
-                    {'d', 'b', '-', '-', '-'},
-                    {'-', '-', '-', '-', '-'},
-                    {'-', '-', '-', '-', '-'},
-                    {'-', '-', '-', '-', '-'},
-                    {'-', '-', '-', '-', '-'}
+                    "db---",
+                    "-----",
+                    "-----",
+                    "-----",
+                    "-----"
                 };
-            bot = new Bot(matrix);
-            bot.NextMove();
-            string move = bot.NextMove();
+            _bot = new Bot();
+            _bot.next_move(0, 1, 5, 5, matrix);
+            var move = _bot.next_move(_bot.CurrentBotPosition.Column, _bot.CurrentBotPosition.Row, 5, 5, _bot.MatrixState);
 
-            //Assert
+            ////Assert
             move.Should().Be("CLEAN");
             AssertMatrixIsClean();
         }
@@ -88,23 +80,26 @@ namespace BotCleanLarge
         [Test]
         public void test_case_3()
         {
-            bot.Matrix = new char[5, 5]
+            //Arrange
+            var matrix = new string[]
                 {
-                    {'b', '-', '-', '-', 'd'},
-                    {'d', '-', '-', '-', 'd'},
-                    {'-', '-', '-', '-', '-'},
-                    {'-', '-', '-', '-', '-'},
-                    {'-', '-', '-', '-', '-'}
+                    "b---d",
+                    "d---d",
+                    "-----",
+                    "-----",
+                    "-----"
                 };
-
+            _bot = new Bot();
+            
             //Act
 
-            for (int move = 0; move < 12; move++)
+            _bot.next_move(0, 0, 5, 5, matrix);
+
+            for (int move = 1; move < 9; move++)
             {
-                bot.NextMove();
+                var m = _bot.next_move(_bot.CurrentBotPosition.Row, _bot.CurrentBotPosition.Column, 5, 5, _bot.MatrixState);
             }
 
-            bot.NumberOfMoves.Should().Be(12);
             AssertMatrixIsClean();
 
         }
@@ -112,38 +107,40 @@ namespace BotCleanLarge
         [Test]
         public void test_case_4()
         {
+
             //Arrange
-            bot.Matrix = new char[5, 5]
+            var matrix = new string[]
                 {
-                    {'-', '-', '-', '-', 'd'},
-                    {'-', '-', '-', '-', '-'},
-                    {'-', '-', '-', 'd', '-'},
-                    {'d', '-', 'd', '-', 'b'},
-                    {'-', '-', '-', '-', '-'}
+                    "----d",
+                    "-----",
+                    "---d-",
+                    "d-d-b",
+                    "-----"
                 };
+            _bot = new Bot();
 
             //Act
 
-            for (int move = 0; move < 14; move++)
+            _bot.next_move(3, 4, 5, 5, matrix);
+
+            for (int move = 1; move < 14; move++)
             {
-                bot.NextMove();
+                var m = _bot.next_move(_bot.CurrentBotPosition.Row, _bot.CurrentBotPosition.Column, 5, 5, _bot.MatrixState);
             }
 
-            bot.NumberOfMoves.Should().Be(14);
             AssertMatrixIsClean();
-
         }
 
 
         private void AssertMatrixIsClean()
         {
-            //foreach (var row in bot.Matrix)
-            //{
-            //    foreach (var character in row)
-            //    {
-            //        character.Should().Be('-');
-            //    }
-            //}
+            foreach (var row in _bot.MatrixState)
+            {
+                foreach (var character in row)
+                {
+                    character.Should().Be('-');
+                }
+            }
         }
 
 

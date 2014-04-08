@@ -2,76 +2,58 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Text;
 
 namespace BotCleanLarge
 {
     public interface IBot
     {
-        char[,] Matrix { get; set; }
-        int NumberOfMoves { get; }
-        Point BotPosition { get; set; }
-        string NextMove();
+        string[] MatrixState { get; set; }
+        Position CurrentBotPosition { get; set; }
+        string next_move(int botRow, int botColumn, int gridHeight, int gridWidth, string[] grid);
     }
 
     class Bot : IBot
     {
-        public char[,] Matrix { get; set; }
-        public int NumberOfMoves { get; private set; }
-        public Point BotPosition { get; set; }
-
         const string Right = "RIGHT";
         const string Left = "LEFT";
         private const string Up = "UP";
         private const string Down = "DOWN";
         private const string Clean = "CLEAN";
-        private List<Point> _dirtPositions = new List<Point>();
 
-        
-        public Bot(char[,] matrix)
-        {
-            Matrix = matrix;
-            ScanMatrix();
-        }
+        public string[] MatrixState { get; set; }
 
-        private void ScanMatrix()
+        public Position CurrentBotPosition { get; set; }
+
+        public Bot()
         {
-            for (int x = 0; x < Matrix.GetLength(0); x++)
+            
+        }       
+
+        public string next_move(int botRow, int botColumn, int gridHeight, int gridWidth, string[] grid)
+        {
+            var matrix = ConvertToDoubleArray(gridHeight, gridWidth, grid);
+
+            var botPosition = new Position(botRow, botColumn);
+
+            var dirtPositions = ScanMatrix(matrix);
+
+
+            if (matrix[botPosition.Row, botPosition.Column] == 'd')
             {
-                for (int y = 0; y < Matrix.GetLength(1); y++)
-                {
-                    var character = Matrix[x, y];
-
-                    if (character == 'b')
-                    {
-                        BotPosition = new Point(x, y);
-                    }
-                    else if (character == 'd')
-                    {
-                        _dirtPositions.Add(new Point(x,y));
-                    }
-                }
-            }
-        }
-
-        
-        public string NextMove()
-        {
-            if (Matrix[BotPosition.X, BotPosition.Y] == 'd')
-            {
-                Matrix[BotPosition.X, BotPosition.Y] = '-';
-                _dirtPositions.Remove(new Point(BotPosition.X, BotPosition.Y));
-                NumberOfMoves++;
+                matrix[botPosition.Row, botPosition.Column] = '-';
+                dirtPositions.Remove(new Position(botPosition.Row, botPosition.Column));
+                CaptureState(gridHeight, matrix);
                 return Clean;
             }
 
-            int shortestDistance = int.MaxValue;
-            Point nextDirtyPoint = new Point();
+            var shortestDistance = int.MaxValue;
 
-            
+            var nextDirtyPoint = new Position();
 
-            foreach (var dirtPosition in _dirtPositions)
+            foreach (var dirtPosition in dirtPositions)
             {
-                int dist = Math.Abs(BotPosition.X - dirtPosition.X) + Math.Abs(BotPosition.Y - dirtPosition.Y);
+                int dist = Math.Abs(botPosition.Row - dirtPosition.Row) + Math.Abs(botPosition.Column - dirtPosition.Column);
                 if (dist < shortestDistance)
                 {
                     shortestDistance = dist;
@@ -80,40 +62,96 @@ namespace BotCleanLarge
             }
 
             string movement = null;
-            if (BotPosition.X != nextDirtyPoint.X)
+            if (botPosition.Row != nextDirtyPoint.Row)
             {
-                movement = BotPosition.X < nextDirtyPoint.X ?  Down : Up;
+                movement = botPosition.Row < nextDirtyPoint.Row ? Down : Up;
             }
             else
             {
-                movement = BotPosition.Y < nextDirtyPoint.Y ? Right : Left;
+                movement = botPosition.Column < nextDirtyPoint.Column ? Right : Left;
             }
+
+            matrix[botPosition.Row, botPosition.Column] = '-';
 
             switch (movement)
             {
                 case Down:
-                    BotPosition = new Point(BotPosition.X + 1, BotPosition.Y);
+                    CurrentBotPosition = new Position(botPosition.Row + 1, botPosition.Column);
                     break;
                 case Up:
-                    BotPosition = new Point(BotPosition.X - 1, BotPosition.Y);
+                    CurrentBotPosition = new Position(botPosition.Row - 1, botPosition.Column);
                     break;
                 case Right:
-                    BotPosition = new Point(BotPosition.X, BotPosition.Y + 1);
+                    CurrentBotPosition = new Position(botPosition.Row, botPosition.Column + 1);
                     break;
                 case Left:
-                    BotPosition = new Point(BotPosition.X, BotPosition.Y - 1);
+                    CurrentBotPosition = new Position(botPosition.Row, botPosition.Column - 1);
                     break;
-
-
             }
 
-            NumberOfMoves++;
+            if (matrix[CurrentBotPosition.Row, CurrentBotPosition.Column] != 'd')
+                matrix[CurrentBotPosition.Row, CurrentBotPosition.Column] = 'b';
+
+
+            CaptureState(gridHeight, matrix);
+
 
             return movement;
         }
 
+        private char[,] ConvertToDoubleArray(int gridHeight, int gridWidth, string[] grid)
+        {
+            var matrix = new char[gridHeight,gridWidth];
 
+            for (var rowIndex = 0; rowIndex < grid.Length; rowIndex++)
+            {
+                var row = grid[rowIndex];
+
+                for (var columnIndex = 0; columnIndex < row.Length; columnIndex++)
+                {
+                    var character = row[columnIndex];
+                    matrix[rowIndex, columnIndex] = character;
+                }
+            }
+            return matrix;
+        }
+
+        private static List<Position> ScanMatrix(char[,] matrix)
+        {
+            var dirtPositions = new List<Position>();
+
+            for (int x = 0; x < matrix.GetLength(0); x++)
+            {
+                for (int y = 0; y < matrix.GetLength(1); y++)
+                {
+                    var character = matrix[x, y];
+
+                    if (character == 'd')
+                    {
+                        dirtPositions.Add(new Position(x, y));
+                    }
+                }
+            }
+            return dirtPositions;
+        }
+
+        private void CaptureState(int gridHeight, char[,] matrix)
+        {
+            MatrixState = new string[gridHeight];
+
+            for (int rowIndex = 0; rowIndex < matrix.GetLength(0); rowIndex++)
+            {
+                var builder = new StringBuilder();
+
+                for (int columnIndex = 0; columnIndex < matrix.GetLength(1); columnIndex++)
+                {
+                    var character = matrix[rowIndex, columnIndex];
+
+                    builder.Append(character);
+                }
+
+                MatrixState[rowIndex] = builder.ToString();
+            }
+        }
     }
-
-    
 }
