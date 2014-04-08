@@ -10,7 +10,9 @@ namespace BotCleanLarge
     {
         string[] MatrixState { get; set; }
         Position CurrentBotPosition { get; set; }
+        List<EdgeInfo> Edges { get; set; }
         string next_move(int botRow, int botColumn, int gridHeight, int gridWidth, string[] grid);
+        List<EdgeInfo> FindEdges(Position i, List<Position> i1, char[,] matrix);
     }
 
     class Bot : IBot
@@ -24,6 +26,7 @@ namespace BotCleanLarge
         public string[] MatrixState { get; set; }
 
         public Position CurrentBotPosition { get; set; }
+        public List<EdgeInfo> Edges { get; set; }
 
         public Bot()
         {
@@ -38,6 +41,7 @@ namespace BotCleanLarge
 
             var dirtPositions = ScanMatrix(matrix);
 
+            Edges = FindEdges(botPosition, dirtPositions, matrix);
 
             if (matrix[botPosition.Row, botPosition.Column] == 'd')
             {
@@ -99,6 +103,75 @@ namespace BotCleanLarge
             return movement;
         }
 
+
+
+        public List<EdgeInfo> FindEdges(Position botPosition, List<Position> dirtyPositions, char[,] matrix)
+        {
+            EdgeInfo furthestNW = new EdgeInfo();
+            EdgeInfo furthestNE = new EdgeInfo();
+            EdgeInfo furthestSW = new EdgeInfo();
+            EdgeInfo furthestSE = new EdgeInfo();
+
+            foreach (var dirtyPosition in dirtyPositions)
+            {
+                var rowDisance = dirtyPosition.Row - botPosition.Row;
+                var columnDistance = dirtyPosition.Column - botPosition.Column;
+
+                var totalDistance = Math.Abs(rowDisance) + Math.Abs(columnDistance);
+                //NorthWest
+                if (columnDistance < 0 && rowDisance < 0)
+                {
+                    CheckEdgeInfoDistance(furthestNW, totalDistance, dirtyPosition);
+                }
+                else if (columnDistance >= 0 && rowDisance <= 0)
+                {
+                    //NorthEast
+                    CheckEdgeInfoDistance(furthestNE, totalDistance, dirtyPosition);
+                }
+                //SouthWest
+                else if (columnDistance < 0 && rowDisance > 0)
+                {
+                    CheckEdgeInfoDistance(furthestSW, totalDistance, dirtyPosition);
+                }
+                //SouthEast
+                else if (columnDistance >= 0 && rowDisance >= 0)
+                {
+                    CheckEdgeInfoDistance(furthestSE, totalDistance, dirtyPosition);
+                }
+
+            }
+
+            var availEdgeList = new List<EdgeInfo>();
+
+            if (furthestNE.Distance > -1)
+            {
+                availEdgeList.Add(furthestNE);
+            }
+            if (furthestNW.Distance > -1)
+            {
+                availEdgeList.Add(furthestNW);
+            }
+            if (furthestSW.Distance > -1)
+            {
+                availEdgeList.Add(furthestSW);
+            }
+            if (furthestSE.Distance > -1)
+            {
+                availEdgeList.Add(furthestSE);
+            }
+
+            return availEdgeList;
+        }
+
+        private void CheckEdgeInfoDistance(EdgeInfo edgeInfo, int totalDistance, Position dirtyPosition)
+        {
+            if (edgeInfo.Distance < totalDistance)
+            {
+                edgeInfo.Position = dirtyPosition;
+                edgeInfo.Distance = totalDistance;
+            }
+        }
+        
         private char[,] ConvertToDoubleArray(int gridHeight, int gridWidth, string[] grid)
         {
             var matrix = new char[gridHeight,gridWidth];
@@ -153,5 +226,16 @@ namespace BotCleanLarge
                 MatrixState[rowIndex] = builder.ToString();
             }
         }
+    }
+
+    public class EdgeInfo
+    {
+        public EdgeInfo()
+        {
+            Distance = -1;
+        }
+
+        public Position Position { get; set; }
+        public int Distance { get; set; }
     }
 }

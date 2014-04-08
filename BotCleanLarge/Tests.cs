@@ -105,6 +105,32 @@ namespace BotCleanLarge
         }
 
         [Test]
+        public void when_finding_the_furthest_edges__i_expect_values_0_4_and_3_0()
+        {
+
+            //Arrange
+            var matrix = new string[]
+                {
+                    "----d",
+                    "-----",
+                    "---d-",
+                    "d-d-b",
+                    "-----"
+                };
+            _bot = new Bot();
+
+            //Act
+
+            _bot.next_move(3, 4, 5, 5, matrix);
+
+            //_bot.next_move(3, 4, 5, 5, matrix);
+
+            _bot.Edges.Count.Should().Be(2);
+            _bot.Edges.Any(x => x.Position.Column == 4 && x.Position.Row == 0).Should().BeTrue();
+            _bot.Edges.Any(x => x.Position.Column == 0 && x.Position.Row == 3).Should().BeTrue();
+        }
+
+        [Test]
         public void test_case_4()
         {
 
