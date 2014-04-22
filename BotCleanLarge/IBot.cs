@@ -10,9 +10,9 @@ namespace BotCleanLarge
     {
         string[] MatrixState { get; set; }
         Position CurrentBotPosition { get; set; }
-        List<EdgeInfo> Edges { get; set; }
+        EdgeInfo ClosestEdge { get; set; }
         string next_move(int botRow, int botColumn, int gridHeight, int gridWidth, string[] grid);
-        List<EdgeInfo> FindEdges(Position i, List<Position> i1, char[,] matrix);
+        void FindClosestEdge(Position i, List<Position> i1, char[,] matrix);
     }
 
     class Bot : IBot
@@ -27,6 +27,7 @@ namespace BotCleanLarge
 
         public Position CurrentBotPosition { get; set; }
         public List<EdgeInfo> Edges { get; set; }
+        public EdgeInfo ClosestEdge { get; set; }
 
         public Bot()
         {
@@ -41,7 +42,7 @@ namespace BotCleanLarge
 
             var dirtPositions = ScanMatrix(matrix);
 
-            Edges = FindEdges(botPosition, dirtPositions, matrix);
+            FindClosestEdge(botPosition, dirtPositions, matrix);
 
             if (matrix[botPosition.Row, botPosition.Column] == 'd')
             {
@@ -105,62 +106,91 @@ namespace BotCleanLarge
 
 
 
-        public List<EdgeInfo> FindEdges(Position botPosition, List<Position> dirtyPositions, char[,] matrix)
+        public void FindClosestEdge(Position botPosition, List<Position> dirtyPositions, char[,] matrix)
         {
-            EdgeInfo furthestNW = new EdgeInfo();
-            EdgeInfo furthestNE = new EdgeInfo();
-            EdgeInfo furthestSW = new EdgeInfo();
-            EdgeInfo furthestSE = new EdgeInfo();
+            int max_X = int.MinValue;
+            int max_Y = int.MinValue;
+            int min_X = int.MaxValue;
+            int min_Y = int.MaxValue;
+
+            EdgeInfo closestMinX = new EdgeInfo
+                {
+                   Distance = int.MaxValue
+                };
+
+            EdgeInfo closestMinY = new EdgeInfo
+            {
+                Distance = int.MaxValue
+            };
+
+            EdgeInfo closestMaxX = new EdgeInfo
+            {
+                Distance = int.MaxValue
+            };
+
+            EdgeInfo closestMaxY = new EdgeInfo
+            {
+                Distance = int.MaxValue
+            };
+
+            List<EdgeInfo> edges = new List<EdgeInfo>()
+                {
+                    closestMinX,closestMinY,closestMaxX,closestMaxY
+                };
+
+            ClosestEdge = new EdgeInfo();
+            ClosestEdge.Distance = int.MaxValue;
 
             foreach (var dirtyPosition in dirtyPositions)
             {
-                var rowDisance = dirtyPosition.Row - botPosition.Row;
-                var columnDistance = dirtyPosition.Column - botPosition.Column;
-
-                var totalDistance = Math.Abs(rowDisance) + Math.Abs(columnDistance);
-                //NorthWest
-                if (columnDistance < 0 && rowDisance < 0)
+                botPosition.Y = botPosition.Row - dirtyPosition.Row;
+                botPosition.X = dirtyPosition.Column - botPosition.Column;
+              
+                if (botPosition.X >= 0 &&  max_X < botPosition.X)
                 {
-                    CheckEdgeInfoDistance(furthestNW, totalDistance, dirtyPosition);
+                    
+                    max_X = botPosition.X;
+                    PopulateClosestEdgeInfo(botPosition, dirtyPosition, closestMaxX);
                 }
-                else if (columnDistance >= 0 && rowDisance <= 0)
+                else if (min_X > botPosition.X)
                 {
-                    //NorthEast
-                    CheckEdgeInfoDistance(furthestNE, totalDistance, dirtyPosition);
-                }
-                //SouthWest
-                else if (columnDistance < 0 && rowDisance > 0)
-                {
-                    CheckEdgeInfoDistance(furthestSW, totalDistance, dirtyPosition);
-                }
-                //SouthEast
-                else if (columnDistance >= 0 && rowDisance >= 0)
-                {
-                    CheckEdgeInfoDistance(furthestSE, totalDistance, dirtyPosition);
+                    min_X = botPosition.X;
+                    PopulateClosestEdgeInfo(botPosition, dirtyPosition,closestMinX);
+                    
                 }
 
+                if (botPosition.Y >= 0 && max_Y < botPosition.Y)
+                {
+                    max_Y = botPosition.Y;
+                    PopulateClosestEdgeInfo(botPosition, dirtyPosition,closestMaxY);
+                    
+                }
+                else if (min_Y > botPosition.Y)
+                {
+                    min_Y = botPosition.Y;
+                    PopulateClosestEdgeInfo(botPosition, dirtyPosition,closestMinY);
+                    
+                }
             }
 
-            var availEdgeList = new List<EdgeInfo>();
 
-            if (furthestNE.Distance > -1)
+            foreach (var edgeInfo in edges)
             {
-                availEdgeList.Add(furthestNE);
-            }
-            if (furthestNW.Distance > -1)
-            {
-                availEdgeList.Add(furthestNW);
-            }
-            if (furthestSW.Distance > -1)
-            {
-                availEdgeList.Add(furthestSW);
-            }
-            if (furthestSE.Distance > -1)
-            {
-                availEdgeList.Add(furthestSE);
+                if (edgeInfo.Distance < ClosestEdge.Distance)
+                    ClosestEdge = edgeInfo;
             }
 
-            return availEdgeList;
+        }
+
+        private void PopulateClosestEdgeInfo(Position botPosition, Position dirtyPosition, EdgeInfo currentclosestEdge)
+        {
+            int totalDistance;
+            totalDistance = Math.Abs(botPosition.Y) + Math.Abs(botPosition.X);
+            if (totalDistance < currentclosestEdge.Distance)
+            {
+                currentclosestEdge.Distance = totalDistance;
+                currentclosestEdge.Position = dirtyPosition;
+            }
         }
 
         private void CheckEdgeInfoDistance(EdgeInfo edgeInfo, int totalDistance, Position dirtyPosition)
@@ -237,5 +267,7 @@ namespace BotCleanLarge
 
         public Position Position { get; set; }
         public int Distance { get; set; }
+ 
     }
+    
 }

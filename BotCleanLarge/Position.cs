@@ -12,7 +12,12 @@
             Row = row;
             Column = column;
         }
+        //Based on Mattrix
         public int Row { get; set; }
         public int Column { get; set; }
+
+        //For our Algorithm based on bot postion
+        public int X { get; set; }
+        public int Y { get; set; }
     }
 }
