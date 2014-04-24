@@ -12,7 +12,7 @@
             Row = row;
             Column = column;
         }
-        //Based on Mattrix
+        //Based on Grid
         public int Row { get; set; }
         public int Column { get; set; }
 
